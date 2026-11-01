@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Özetleyici - Pdf - Docx - Txt</string>
+    <!-- Google'in TEST kimlikleri. Yayinlamadan once kendi AdMob kimliklerinle degistir (README'ye bak). -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!-- Alt banner (320x50) -->
+    <string name="admob_banner_id">ca-app-pub-3940256099942544/6300978111</string>
+    <!-- 10 saniyelik bekleme ekranindaki reklam (300x250) -->
+    <string name="admob_working_id">ca-app-pub-3940256099942544/6300978111</string>
+    <!-- Odullu reklam: ozet hazir olunca izlenir (Google test kimligi) -->
+    <string name="admob_rewarded_id">ca-app-pub-3940256099942544/5224354917</string>
+</resources>
