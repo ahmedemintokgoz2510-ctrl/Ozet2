@@ -47,4 +47,7 @@ dependencies {
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation("org.apache.poi:poi-scratchpad:5.2.5")   // eski .doc / .ppt
+
+    testImplementation("junit:junit:4.13.2")
 }

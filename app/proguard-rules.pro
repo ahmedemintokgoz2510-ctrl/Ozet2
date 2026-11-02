@@ -2,3 +2,8 @@
 -dontwarn com.tom_roush.pdfbox.**
 -dontwarn com.gemalto.jp2.**
 -dontwarn org.bouncycastle.**
+-dontwarn org.apache.poi.**
+-dontwarn org.apache.xmlbeans.**
+-dontwarn org.openxmlformats.**
+-dontwarn java.awt.**
+-dontwarn javax.swing.**
