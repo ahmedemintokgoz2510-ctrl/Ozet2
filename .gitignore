@@ -6,3 +6,4 @@ local.properties
 *.hprof
 *.jks
 *.keystore
+keystore.properties
