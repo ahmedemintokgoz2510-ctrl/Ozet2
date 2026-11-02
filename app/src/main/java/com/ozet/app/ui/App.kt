@@ -37,6 +37,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -164,13 +166,13 @@ fun App(vm: MainViewModel) {
         topBar = {
             if (state is UiState.Home) {
                 Box(
-                    Modifier.fillMaxWidth().background(Color.White).padding(vertical = 6.dp),
+                    Modifier.fillMaxWidth().background(Color.White).statusBarsPadding().padding(vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) { AdBox(AdSize.BANNER, R.string.admob_banner_id) }
             }
         },
         bottomBar = {
-            Column(Modifier.fillMaxWidth().background(Color.White)) {
+            Column(Modifier.fillMaxWidth().background(Color.White).navigationBarsPadding()) {
                 if (state is UiState.Home || state is UiState.History) {
                     NavBar(
                         homeSelected = state is UiState.Home,
