@@ -30,3 +30,31 @@
 -dontwarn org.apache.xml.security.**
 -dontwarn org.etsi.**
 -dontwarn org.w3.**
+
+# R8 "Missing class" hatalari: POI'nin XML sema sinif paketleri tam gelmez (poi-ooxml-lite); uyari verme.
+-dontwarn com.microsoft.**
+-dontwarn org.openxmlformats.**
+-dontwarn org.w3.x2000.**
+-dontwarn org.w3.x2001.**
+-dontwarn org.etsi.**
+-dontwarn org.apache.xmlbeans.**
+-dontwarn schemaorg_apache_xmlbeans.**
+-dontwarn org.apache.poi.**
+-dontwarn org.apache.commons.**
+-dontwarn org.apache.logging.**
+-dontwarn org.apache.batik.**
+-dontwarn org.apache.xml.**
+-dontwarn org.apache.jcp.**
+-dontwarn org.apache.santuario.**
+-dontwarn org.openxmlformats.schemas.**
+-dontwarn javax.xml.**
+-dontwarn javax.imageio.**
+-dontwarn javax.naming.**
+-dontwarn javax.security.**
+-dontwarn java.beans.**
+-dontwarn java.awt.**
+-dontwarn javax.swing.**
+-dontwarn org.ietf.jgss.**
+-dontwarn org.slf4j.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.osgi.**
