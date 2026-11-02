@@ -7,3 +7,26 @@
 -dontwarn org.openxmlformats.**
 -dontwarn java.awt.**
 -dontwarn javax.swing.**
+
+# Apache POI (xls/xlsx/doc/ppt): XMLBeans ve şema sınıfları yansıma ile yüklenir; R8 silmesin.
+-keep class org.apache.poi.** { *; }
+-keep class org.apache.xmlbeans.** { *; }
+-keep class org.openxmlformats.schemas.** { *; }
+-keep class com.microsoft.schemas.** { *; }
+-keep class schemaorg_apache_xmlbeans.** { *; }
+-dontwarn org.apache.logging.**
+-dontwarn org.slf4j.**
+-dontwarn javax.xml.stream.**
+-dontwarn org.w3c.dom.**
+-dontwarn aQute.bnd.annotation.**
+-dontwarn edu.umd.cs.findbugs.annotations.**
+-dontwarn com.github.javaparser.**
+-dontwarn org.osgi.**
+-dontwarn org.apache.batik.**
+-dontwarn de.rototor.pdfbox.**
+-dontwarn org.apache.commons.**
+-dontwarn org.apache.pdfbox.**
+-dontwarn org.apache.santuario.**
+-dontwarn org.apache.xml.security.**
+-dontwarn org.etsi.**
+-dontwarn org.w3.**

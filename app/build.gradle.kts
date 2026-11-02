@@ -5,18 +5,39 @@ plugins {
 
 android {
     namespace = "com.ozet.app"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.ozet.app"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
 
+    // Yayın imzası: keystore.properties dosyasından ya da ortam değişkenlerinden (GitHub Secrets) okunur.
+    // Hiçbiri yoksa release imzasız üretilir (debug derlemesi etkilenmez).
+    val ksProps = java.util.Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    fun ks(key: String, env: String): String? = ksProps.getProperty(key) ?: System.getenv(env)
+    val ksFile = ks("storeFile", "OZET_KEYSTORE_FILE")
+    signingConfigs {
+        if (ksFile != null && file(ksFile).exists()) {
+            create("release") {
+                storeFile = file(ksFile)
+                storePassword = ks("storePassword", "OZET_KEYSTORE_PASSWORD")
+                keyAlias = ks("keyAlias", "OZET_KEY_ALIAS")
+                keyPassword = ks("keyPassword", "OZET_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfigs.findByName("release")?.let { signingConfig = it }
+            ndk { debugSymbolLevel = "SYMBOL_TABLE" }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -27,6 +48,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    // Uygulama içi dil seçimi var: dil bölmesi açık olursa seçilmeyen dillerin kaynakları AAB'den düşer.
+    bundle { language { enableSplit = false } }
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
