@@ -142,7 +142,7 @@ fun App(vm: MainViewModel) {
     val defLen by vm.defaultLength.collectAsStateWithLifecycle()
     val lang by vm.lang.collectAsStateWithLifecycle()
     val view = LocalView.current
-    val working = state is UiState.Working
+    val working = state is UiState.Summarizing || (state as? UiState.Reward)?.ready == false
 
     DisposableEffect(working) {
         view.keepScreenOn = working
@@ -210,8 +210,8 @@ fun App(vm: MainViewModel) {
                 )
                 is UiState.Paste -> PasteScreen(onBack = vm::goHome, onSubmit = vm::submitText)
                 is UiState.Loading -> LoadingScreen()
-                is UiState.Working -> WorkingScreen()
-                is UiState.Reward -> RewardScreen(vm::unlock, vm::goHome)
+                is UiState.Summarizing -> WorkingScreen()
+                is UiState.Reward -> RewardScreen(s.ready, vm::unlock, vm::goHome)
                 is UiState.Done -> ResultScreen(s, vm::setMode, vm::setLength, vm::goHome)
                 is UiState.Error -> ErrorScreen(s.kind, vm::goHome)
             }
@@ -643,7 +643,7 @@ private fun WorkingScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(st.preparing, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Pal.Ink)
+        Text(st.stillSummarizing, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Pal.Ink)
         Spacer(Modifier.height(8.dp))
         Text(st.workingText, textAlign = TextAlign.Center, color = Pal.Sub)
         Spacer(Modifier.height(20.dp))
@@ -658,7 +658,7 @@ private fun WorkingScreen() {
 }
 
 @Composable
-private fun RewardScreen(onUnlock: () -> Unit, onBack: () -> Unit) {
+private fun RewardScreen(summaryReady: Boolean, onUnlock: () -> Unit, onBack: () -> Unit) {
     val st = LocalStrings.current
     val ctx = LocalContext.current
     val ready by AdsGate.ready.collectAsStateWithLifecycle()
@@ -669,10 +669,10 @@ private fun RewardScreen(onUnlock: () -> Unit, onBack: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(st.rewardTitle, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Pal.Ink)
+        Text(if (summaryReady) st.rewardTitle else st.summarizing, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Pal.Ink)
         Spacer(Modifier.height(8.dp))
         Text(
-            if (status == 3) st.rewardFailed else st.rewardDesc,
+            if (status == 3) st.rewardFailed else if (summaryReady) st.rewardDesc else st.rewardDescWorking,
             textAlign = TextAlign.Center,
             color = Pal.Sub
         )
