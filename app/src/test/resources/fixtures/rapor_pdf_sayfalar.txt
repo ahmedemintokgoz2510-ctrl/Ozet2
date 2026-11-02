@@ -1,0 +1,57 @@
+Dijital Dönüşüm Projesi – Durum Raporu 	GİZLİ – Dahili Kullanım
+Rapor tarihi: 1 Kasım 2026 	Sayfa 1
+Dijital Dönüşüm Projesi
+Üçüncü Çeyrek Durum Raporu · Hazırlayan: Proje Yönetim Ofisi
+1. Yönetici Özeti
+Proje, planlanan takvimin yaklaşık iki hafta gerisinde ilerlemekle birlikte bütçe hedefleri
+dâhilinde yürütülmektedir. Çeyrek boyunca müşteri portalı ve mobil uygulama
+modüllerinin ilk sürümleri tamamlanmış, eski ERP sisteminden veri taşıma çalışmaları ise
+%72 oranında bitirilmiştir. Kritik risk, dış tedarikçinin entegrasyon API'sini zamanında teslim
+edememesidir. Bu gecikme çözülmezse canlıya geçiş tarihi Ocak 2027'den Mart 2027'ye
+kayabilir.
+Genel durum sarı (dikkat gerektiriyor) olarak değerlendirilmiştir. Bütçenin %61'i harcanmış,
+tamamlanma oranı ise %58 seviyesindedir. Bu fark, ek test maliyetlerinden
+kaynaklanmaktadır.
+2. Modül Bazında İlerleme
+Modül 	Sorumlu 	Plan 	Gerçekleşen 	Durum
+Müşteri Portalı 	Ayşe Yılmaz 	%100 	%95 	Yeşil
+Mobil Uygulama 	Mehmet Demir 	%80 	%70 	Sarı
+ERP Veri Taşıma 	Zeynep Kaya 	%85 	%72 	Sarı
+Raporlama Paneli 	Can Öztürk 	%50 	%30 	Kırmızı
+Güvenlik Testleri 	Elif Şahin 	%40 	%40 	Yeşil
+Not: Raporlama Paneli modülü, veri ambarı şemasının geç onaylanması nedeniyle en çok
+geride kalan bölümdür.
+3. Bütçe Durumu
+Kalem 	Bütçe (₺) 	Harcanan (₺) 	Kalan (₺)
+Yazılım geliştirme 	4.800.000 	3.150.000 	1.650.000
+Altyapı ve bulut 	1.200.000 	640.000 	560.000
+Danışmanlık 	900.000 	710.000 	190.000
+Eğitim 	300.000 	45.000 	255.000
+TOPLAM 	7.200.000 	4.545.000 	2.655.000
+
+=====PAGE=====
+Dijital Dönüşüm Projesi – Durum Raporu 	GİZLİ – Dahili Kullanım
+Rapor tarihi: 1 Kasım 2026 	Sayfa 2
+4. Riskler ve Önlemler
+• Tedarikçi API gecikmesi: Entegrasyon dokümantasyonu iki kez ertelenmiştir. Önlem:
+Tedarikçi ile haftalık görüşme ve alternatif bir sahte (mock) servis kurulması.
+• Veri kalitesi: Eski ERP'deki yinelenen müşteri kayıtları taşımayı yavaşlatmaktadır. Önlem:
+Otomatik tekilleştirme betiği ve iş birimi onayı.
+• Kaynak yetersizliği: Test mühendisi sayısı ihtiyacın altındadır. Önlem: Kasım ayı için iki
+dış kaynak talebi açılmıştır.
+• Kullanıcı kabulü: Saha ekiplerinin eğitim katılımı beklenenin altındadır. Önlem: Kısa
+video eğitimleri ve bölge bazlı pilot gruplar.
+5. Önümüzdeki Çeyrek İçin Takvim
+Aşağıdaki tarihler mevcut plana göre verilmiştir; tedarikçi API'si Kasım sonuna kadar teslim
+edilmezse yeniden değerlendirilecektir.
+Tarih 	Kilometre Taşı
+15 Kasım 2026 	Veri ambarı şemasının nihai onayı
+30 Kasım 2026 	Tedarikçi API teslimi (kritik)
+20 Aralık 2026 	Kullanıcı kabul testlerinin başlaması
+31 Ocak 2027 	Canlıya geçiş (hedef)
+6. Sonuç ve Karar Talepleri
+Yönetim kurulundan üç karar beklenmektedir: (1) tedarikçiye yönelik resmî gecikme bildirimi
+yapılması, (2) test ekibi için ek bütçe olarak 250.000 ₺ onaylanması, (3) canlıya geçiş
+tarihinin gerekirse Mart 2027'ye ertelenmesine ilişkin yetkinin proje direktörüne verilmesi. Bu
+kararlar alındığında proje sarı durumdan yeşile dönebilir.
+

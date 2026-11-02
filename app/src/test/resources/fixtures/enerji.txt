@@ -1,0 +1,26 @@
+YENİLENEBİLİR ENERJİNİN TÜRKİYE'DEKİ GELECEĞİ
+Hazırlayan: Test Raporu - 1 Kasım 2026
+
+GİRİŞ
+Türkiye, son on yılda yenilenebilir enerji kapasitesini hızla artırmış ve enerji arz güvenliği ile dışa bağımlılığı azaltma hedefleri doğrultusunda önemli adımlar atmıştır. Rüzgâr, güneş, hidroelektrik ve jeotermal kaynaklar, ülkenin toplam kurulu gücünün yarısından fazlasını oluşturmaktadır. Ancak şebeke altyapısı, depolama teknolojileri ve finansman koşulları hâlâ büyümenin önündeki başlıca engeller arasında yer almaktadır.
+
+MEVCUT DURUM
+- Güneş enerjisi: Son beş yılda kurulu güç yaklaşık üç katına çıkmıştır. Lisanssız üretim, çatı tipi sistemler sayesinde hızla yaygınlaşmıştır.
+- Rüzgâr enerjisi: Ege ve Marmara bölgelerinde yoğunlaşmıştır. Yeni ihaleler (YEKA) ile yerli üretim şartı getirilmiştir.
+- Hidroelektrik: Kurulu gücün en büyük payını oluşturmaya devam eder, ancak kuraklık yıllarında üretim belirgin biçimde düşer.
+- Jeotermal: Dünyada ilk sıralarda yer alır, fakat yatırım maliyetleri ve saha riski yüksektir.
+
+SAYISAL VERİLER (örnek)
+Toplam kurulu güç: 115 GW
+Yenilenebilir pay: %58
+Güneş: 17 GW | Rüzgâr: 14 GW | Hidro: 32 GW | Jeotermal: 1,7 GW
+2030 hedefi: 150 GW toplam, %65 yenilenebilir pay
+
+ZORLUKLAR
+Birincisi, şebeke bağlantı kapasitesi birçok bölgede doludur ve yeni projeler bağlantı onayı için yıllarca beklemektedir. İkincisi, batarya depolama yatırımları henüz yeterli teşvik görmemektedir; bu da gün içi dalgalanmaları yönetmeyi zorlaştırmaktadır. Üçüncüsü, döviz kurundaki oynaklık, ithal ekipmana bağımlı projelerin maliyetini öngörülemez hâle getirmektedir. Son olarak, izin süreçlerinin uzunluğu yatırımcıların planlamasını olumsuz etkilemektedir.
+
+FIRSATLAR
+Yeşil hidrojen, offshore rüzgâr ve tarımsal alanlarda agrivoltaik sistemler önümüzdeki dönemin öne çıkan fırsatlarıdır. Avrupa Birliği'nin Sınırda Karbon Düzenleme Mekanizması (CBAM), Türk ihracatçıları temiz enerji kullanımına teşvik etmektedir. Bu durum, kurumsal enerji alım anlaşmalarını (PPA) cazip hâle getirmektedir.
+
+SONUÇ VE ÖNERİLER
+Hedeflere ulaşmak için üç öncelik öne çıkmaktadır: (1) şebeke yatırımlarının hızlandırılması, (2) depolama için net bir destek mekanizması kurulması, (3) izin süreçlerinin tek kapıdan yönetilmesi. Bu adımlar atıldığında, Türkiye hem iklim hedeflerini yakalayabilir hem de sanayide rekabet gücünü artırabilir.
