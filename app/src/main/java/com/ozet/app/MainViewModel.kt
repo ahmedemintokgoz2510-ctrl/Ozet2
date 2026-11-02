@@ -20,6 +20,7 @@ import com.ozet.app.engine.Summarizer
 import com.ozet.app.engine.Translate
 import com.ozet.app.i18n.AppLang
 import com.ozet.app.ui.RewardedGate
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -35,8 +36,10 @@ sealed interface UiState {
     data object Settings : UiState
     data object Paste : UiState
     data object Loading : UiState
-    data class Working(val secondsLeft: Int, val ready: Boolean) : UiState
-    data object Reward : UiState
+    /** Reklam ekranı. [ready] false iken özet arka planda hâlâ hazırlanıyordur. */
+    data class Reward(val ready: Boolean) : UiState
+    /** Reklam bitti ama özet henüz hazır değil: "Hâlâ özetleniyor…" gösterilir. */
+    data object Summarizing : UiState
     data class Done(val result: Result, val mode: Mode, val length: Length, val fileName: String) : UiState
     data class Error(val kind: Err) : UiState
 }
@@ -168,47 +171,59 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         job?.cancel()
         name = label
         mode = Mode.AUTO
-        _state.value = UiState.Working(0, false)
+        _state.value = UiState.Reward(false)
         pending = null
         pendingType = ""
         pendingSize = 0L
         rewardConsumed = false
         job = viewModelScope.launch {
+            // Reklam yüklenirken özet arka planda hazırlanır; dosya boyutuna sınır konmaz.
             RewardedGate.load(getApplication())
             val outcome = runCatching {
-            val loaded = withContext(Dispatchers.IO) { load() }
-            if (loaded.isBlank()) throw AppError(Err.NO_TEXT)
-            val t = withContext(Dispatchers.Default) { DeepTextProcessor.prepare(loaded) }
-            val res = build(t, mode, length)
-            if (res.sentenceCount == 0) throw AppError(Err.TOO_SHORT)
-            Pair(t, res)
+                val loaded = withContext(Dispatchers.IO) { load() }
+                if (loaded.isBlank()) throw AppError(Err.NO_TEXT)
+                val t = withContext(Dispatchers.Default) { DeepTextProcessor.prepare(loaded) }
+                val res = build(t, mode, length)
+                if (res.sentenceCount == 0) throw AppError(Err.TOO_SHORT)
+                Pair(t, res)
             }
+            val failure = outcome.exceptionOrNull()
+            if (failure is CancellationException) throw failure
             outcome.onSuccess { pair ->
                 text = pair.first
                 pendingType = type
                 pendingSize = size
                 pending = UiState.Done(pair.second, mode, length, name)
-                _state.value = UiState.Reward
+                if (rewardConsumed) finishUnlock() else _state.value = UiState.Reward(true)
             }.onFailure { e ->
+                // Bellek yetmezse (OutOfMemoryError) uygulama çökmesin; okunamadı hatası gösterilir.
                 _state.value = UiState.Error((e as? AppError)?.kind ?: Err.READ)
             }
         }
     }
 
-    /** Ödüllü reklam izlendi: özeti göster. */
+    /** Ödüllü reklam izlendi: özet hazırsa göster, değilse "Hâlâ özetleniyor" ekranına geç. */
     fun unlock() {
-        val ready = pending ?: return
         if (rewardConsumed) return
+        if (_state.value !is UiState.Reward) return
         rewardConsumed = true
+        if (pending != null) finishUnlock() else _state.value = UiState.Summarizing
+    }
+
+    private fun finishUnlock() {
+        val ready = pending ?: return
+        pending = null
+        val type = pendingType
+        val size = pendingSize
+        pendingType = ""
+        pendingSize = 0L
         viewModelScope.launch {
-            if (text.isNotEmpty() && name.isNotEmpty() && pendingType.isNotEmpty()) {
-                val saved = withContext(Dispatchers.IO) { store.add(name, pendingType, pendingSize, text) }
+            if (text.isNotEmpty() && name.isNotEmpty() && type.isNotEmpty()) {
+                val saved = withContext(Dispatchers.IO) { store.add(name, type, size, text) }
                 _history.value = saved
             }
-            _state.value = ready
-            pending = null
-            pendingType = ""
-            pendingSize = 0L
+            val cur = _state.value
+            if (cur is UiState.Reward || cur is UiState.Summarizing) _state.value = ready
         }
     }
 
