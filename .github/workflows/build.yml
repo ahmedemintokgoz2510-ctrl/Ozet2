@@ -17,6 +17,12 @@ jobs:
           gradle-version: 8.7
       - name: Lisanslari kabul et
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+      - name: Birim testleri (engine)
+        continue-on-error: true
+        run: |
+          DIR=$(dirname "$(find . -name settings.gradle.kts | head -n 1)")
+          cd "$DIR"
+          gradle testDebugUnitTest --stacktrace
       - name: Derle
         run: |
           DIR=$(dirname "$(find . -name settings.gradle.kts | head -n 1)")
