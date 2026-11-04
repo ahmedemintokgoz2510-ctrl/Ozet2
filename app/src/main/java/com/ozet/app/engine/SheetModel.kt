@@ -153,10 +153,13 @@ object SheetRenderer {
             if (parts.isNotEmpty()) out.append(lab.ifEmpty { if (tr) "Toplam" else "Total" }).append(": ").append(parts.joinToString("; ")).append(".\n\n")
         }
         val label = if (tr) "sütunu" else "column"
-        for (c in cols.values) {
-            if (c.values.size < 2 || c.sample == null || skipStats(c)) continue
-            out.append(statSentence(c, tr, label)).append("\n\n")
+        // Her sütun için ayrı istatistik satırı özeti şişirir: 3'ten fazla sütun varsa yalnızca "toplam" benzeri (yoksa son) sütun anlatılır.
+        val statCols = cols.values.filter { !(it.values.size < 2 || it.sample == null || skipStats(it)) }
+        val shownCols = if (statCols.size <= 2) statCols else {
+            val totalLike = statCols.lastOrNull { Regex("(?i)toplam|total|sum").containsMatchIn(it.header) }
+            listOf(totalLike ?: statCols.last())
         }
+        for (c in shownCols) out.append(statSentence(c, tr, label, withTotal = totals.isEmpty())).append("\n\n")
         out.append(rowLines).append('\n')
         return i
     }
@@ -173,7 +176,7 @@ object SheetRenderer {
         return v.all { it == Math.floor(it) && it in 1900.0..2100.0 }
     }
 
-    private fun statSentence(c: Col, tr: Boolean, colWord: String): String {
+    private fun statSentence(c: Col, tr: Boolean, colWord: String, withTotal: Boolean = true): String {
         val s = c.sample!!
         val vals = c.values
         val sum = vals.sumOf { it.first }
@@ -184,10 +187,10 @@ object SheetRenderer {
         fun withLabel(p: Pair<Double, String>) = if (p.second.isNotEmpty()) "${f(p.first)} (${p.second})" else f(p.first)
         val head = "${c.header} $colWord"
         return if (tr) {
-            val total = if (c.allPct) "" else "toplam ${f(sum)}, "
+            val total = if (c.allPct || !withTotal) "" else "toplam ${f(sum)}, "
             "$head: ${total}ortalama ${f(avg)}, en düşük ${withLabel(min)}, en yüksek ${withLabel(max)}."
         } else {
-            val total = if (c.allPct) "" else "total ${f(sum)}, "
+            val total = if (c.allPct || !withTotal) "" else "total ${f(sum)}, "
             "$head: ${total}average ${f(avg)}, lowest ${withLabel(min)}, highest ${withLabel(max)}."
         }
     }
@@ -196,7 +199,7 @@ object SheetRenderer {
         val pct = like.kind == SCell.Kind.PCT
         val value = if (pct) v * 100 else v
         val whole = abs(value - Math.rint(value)) < 1e-9
-        val d = if (whole) 0 else if (pct) maxOf(like.decimals, 1) else 2
+        val d = if (whole) 0 else if (pct) maxOf(like.decimals, 1) else if (like.decimals == 0 && abs(value) >= 1000) 0 else 2
         var s = fmtNum(value, d, like.grouping || (!pct && abs(value) >= 10_000), tr)
         if (d > 0) s = trimZeros(s, tr)
         return decorate(s, like, tr)

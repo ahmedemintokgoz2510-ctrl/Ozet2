@@ -63,6 +63,7 @@ private class Sent(
     var isExc = false
     var isWarn = false
     var isUrgent = false
+    var isContact = false
     var isDeadline = false
     var hasFormula = false
     var hasDate = false
@@ -215,8 +216,13 @@ object Summarizer {
     /** Sonuç/yaptırım bildiren cümleler (iptal, iade, ceza, fesih, dava...) mesajın en kritik bilgisidir; özetten düşmemeli. */
     private val URGENT = Regex(
         "iptal|iade|ceza\\b|cezai|fesih|dava\\b|hukuki|derhal|" +
+            "(?:ikinci|üçüncü|dördüncü|beşinci|\\d+\\.)\\s+(?:kez|kere|defa)|(?:second|third|fourth|fifth) time|zum (?:zweiten|dritten) mal|"+
             "cancel|refund|terminat|penalt|legal action|immediately|urgent|"+
             "kündig|erstattung|sofort|anular|reembolso|annul|remboursement"
+    )
+    /** İletişim bilgisi (e-posta, telefon, dahili numara): "kime ulaşacağım" bilgisi özetten düşmemeli. */
+    private val CONTACT = Regex(
+        "[\\p{L}\\d._%+-]+@[\\p{L}\\d.-]+\\.[a-z]{2,}|dahili\\s*\\d{2,5}|\\b(?:tel|gsm|cep|phone|call)\\b\\s*[:.]?\\s*\\+?\\d|\\+?\\d[\\d\\s().-]{8,}\\d"
     )
     /** Son tarih / süre bildiren cümleler ("17:00'ye kadar", "en geç", "deadline", "bis spätestens"). */
     private val DEADLINE = Regex(
@@ -293,6 +299,11 @@ object Summarizer {
         "belki", "şimdi", "sonra", "önce", "hep", "hiç", "çok", "daha", "artık", "bile", "sadece", "zaten", "galiba", "tabii", "tamam",
         "nasıl", "neden", "niçin", "böyle", "şöyle", "öylece", "herkes", "hiçbir", "bazen", "hemen", "tekrar", "yalnız", "gerçekten",
         "aslında", "yani", "şey", "falan", "işte", "pekala", "peki", "öyleyse", "belki", "henüz", "hala", "hâlâ", "sanki", "bence",
+        // belge iskeletinden gelen (içerik taşımayan) sözcükler: tablo sütun başlıkları, e-posta başlıkları, rapor kalıpları
+        "özetle", "önceki", "yazışma", "pay", "payı", "ürün", "grubu", "grup", "kalem", "durumu", "durum", "önlem", "önlemler", "sorumlu",
+        "planı", "yönetimi", "tahmin", "tahmini", "çeyrek", "çeyreği", "saat", "sütun", "sütunu", "tarih", "tutar", "adet", "kriter",
+        "previous", "messages", "column", "status", "item", "items", "total",
+        "tek", "saatler", "saatleri", "saatlerde", "çeyrekte", "çeyrekler", "çeyrekten", "çeyreğe", "çeyreğin", "çeyrekteki", "satışlar", "durumlar",
         "well", "yes", "very", "again", "hello", "goodbye", "maybe", "perhaps", "always", "never", "still", "even", "just", "only",
         "really", "quite", "myself", "himself", "herself", "yourself", "itself", "themselves", "okay", "something", "nothing", "everything"
     )
@@ -375,7 +386,7 @@ object Summarizer {
             for (p in parts) {
                 val t = p.trim()
                 val words = t.count { it == ' ' } + 1
-                val minLen = if (bullet) 12 else if (t.any { it.isDigit() }) 14 else 25
+                val minLen = if (bullet) 12 else if (t.any { it.isDigit() } || URGENT.containsMatchIn(pack.lower(t))) 14 else 25
                 if (t.length < minLen || words < (if (bullet) 2 else 3)) continue
                 val st = stems(t, pack)
                 if (st.size < 2) continue
@@ -624,6 +635,7 @@ object Summarizer {
         s.isWarn = WARN.containsMatchIn(s.lower)
         s.isUrgent = URGENT.containsMatchIn(s.lower)
         s.isDeadline = DEADLINE.containsMatchIn(s.lower)
+        s.isContact = CONTACT.containsMatchIn(s.lower)
         if (!s.isClass && pack.code == "tr" && TR_CLASS2.containsMatchIn(s.lower)) s.isClass = true
     }
 
@@ -998,6 +1010,7 @@ object Summarizer {
             if (s.isWarn) v += 0.12
             if (s.isUrgent) v += 0.30
             if (s.isDeadline) v += 0.22
+            if (s.isContact) v += 0.25
             if (s.hasFormula) v += 0.14
             if (s.isExample && s.facts.isNotEmpty()) v += 0.05 else if (s.isExample) v -= 0.05
             v += 0.05 * min(s.facts.size, 4)
@@ -1092,6 +1105,16 @@ object Summarizer {
         for (h in sents.filter { it.isClass && !it.bullet && !it.dialogue }.sortedByDescending { it.score }) {
             if (headAdded >= max(3, target / 3)) break
             if (h !in chosen && (announced(h, pack) > 0 || h.text.contains(':'))) { add(h); headAdded++ }
+        }
+
+        // 3c) Kritik cümleler (iptal/iade/ceza, son tarih, iletişim bilgisi, "üçüncü kez" gibi vurgu) bütçe dolsa bile özette kalsın
+        run {
+            var crit = 0
+            val cap = max(3, target / 3)
+            for (x in sents.filter { (it.isUrgent || it.isDeadline || it.isContact) && !it.dialogue }.sortedByDescending { it.score }) {
+                if (crit >= cap) break
+                if (x !in chosen) { add(x); crit++ }
+            }
         }
 
         // 4) Bütünlük: sınıflandırma üyeleri ve madde listeleri eksik kalmasın
@@ -2086,9 +2109,18 @@ object Summarizer {
         return cur
     }
 
-    private fun titleWord(low: String, acro: Boolean, pack: LangPack, keepForm: Boolean = false): String {
+    private fun titleWord(low: String, acro: Boolean, pack: LangPack, keepForm: Boolean = false, seen: Set<String>? = null): String {
         if (acro) return low.uppercase(pack.locale)
-        val w = if (pack.code == "tr" && !keepForm) trBase(low) else low
+        // Ek atma yalnızca güvenliyse yapılır: kök metinde gerçekten geçiyorsa ya da ünsüzle bitiyorsa ("Aradığ", "Erke" gibi kesikler olmasın).
+        val w = if (pack.code == "tr" && !keepForm) {
+            val b = trBase(low)
+            when {
+                b == low -> low
+                seen != null && b in seen -> b
+                b.last() == 'ğ' || (b.last() in "aeıioöuü" && b.length < 6) -> low
+                else -> b
+            }
+        } else low
         return w.replaceFirstChar { c -> c.titlecase(pack.locale) }
     }
 
@@ -2215,7 +2247,7 @@ object Summarizer {
             // cümle başında büyük harfle görünen ve özel ad olmayan sözcükler ("Öyle", "Yine", "Günaydın"): söylem sözcüğü, kavram değil
             if (tf >= 2 && (uInit[st] ?: 0) * 2 >= tf && !proper && !acro) sc *= 0.3
             if (sc < 0.3) continue
-            out.add(Kw(st, titleWord(best, acro, pack, keepForm = proper || best in TR_PROPER), setOf(st), tf, false, sc))
+            out.add(Kw(st, titleWord(best, acro, pack, keepForm = proper || best in TR_PROPER, seen = uSurf[st]!!.keys), setOf(st), tf, false, sc))
         }
         for ((key, c) in bTf) {
             if (c < 2) continue
@@ -2236,7 +2268,7 @@ object Summarizer {
             if (okMap.isEmpty()) continue
             val sf = pickSurface(okMap).split(' ')
             val disp = sf.joinToString(" ") { w ->
-                titleWord(w, (uAcro[pack.stem(w)] ?: 0) * 2 >= (uTf[pack.stem(w)] ?: 1), pack, keepForm = w in TR_PROPER || (bProper[key] ?: 0) * 2 >= c)
+                titleWord(w, (uAcro[pack.stem(w)] ?: 0) * 2 >= (uTf[pack.stem(w)] ?: 1), pack, keepForm = true)
             }
             out.add(Kw(key, disp, parts.toSet(), c, true, sc))
         }

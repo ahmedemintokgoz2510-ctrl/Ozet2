@@ -181,6 +181,9 @@ internal object EmailThread {
         val lines = text.lines()
         var i = 0
         var subject = ""
+        var from = ""
+        var to = ""
+        var date = ""
         // 1) üst bilgi bloğu
         while (i < lines.size) {
             val l = lines[i].trim()
@@ -188,7 +191,13 @@ internal object EmailThread {
             val m = HEADER.matchEntire(l)
             if (m != null) {
                 val key = m.groupValues[1].lowercase()
-                if ((key == "konu" || key == "subject") && subject.isEmpty()) subject = m.groupValues[2].trim()
+                val v = m.groupValues[2].trim()
+                when (key) {
+                    "konu", "subject" -> if (subject.isEmpty()) subject = v
+                    "gönderen", "gonderen", "kimden", "from" -> if (from.isEmpty()) from = v
+                    "kime", "to" -> if (to.isEmpty()) to = v
+                    "tarih", "date", "gönderilen", "sent" -> if (date.isEmpty()) date = v
+                }
                 i++
             } else break
         }
@@ -209,6 +218,21 @@ internal object EmailThread {
         val sb = StringBuilder()
         val subj = ANGLE_ADDR.replace(SUBJECT_PREFIX.replace(subject, ""), "").trim()
         if (subj.isNotEmpty()) sb.append("# ").append(subj).append("\n\n")
+        val who = ANGLE_ADDR.replace(from, "").trim().trim('"')
+        val whom = ANGLE_ADDR.replace(to, "").trim().trim('"')
+        if (who.isNotEmpty()) {
+            val line = StringBuilder()
+            if (tr) {
+                line.append("Gönderen ").append(who)
+                if (whom.isNotEmpty()) line.append(", alıcı ").append(whom)
+                if (date.isNotEmpty()) line.append(", tarih ").append(date)
+            } else {
+                line.append("From ").append(who)
+                if (whom.isNotEmpty()) line.append(", to ").append(whom)
+                if (date.isNotEmpty()) line.append(", date ").append(date)
+            }
+            sb.append(line).append(".\n\n")
+        }
         sb.append(main)
         if (prev.isNotBlank()) {
             sb.append("\n\n# ").append(if (tr) "Önceki yazışma" else "Previous messages").append("\n\n").append(prev)
