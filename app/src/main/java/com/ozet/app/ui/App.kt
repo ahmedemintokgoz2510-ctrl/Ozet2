@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,12 +95,14 @@ private val ALL_TYPES = arrayOf(
     "text/csv",
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-powerpoint",
     "text/html", "text/markdown", "application/rtf", "text/rtf", "application/json"
 )
 private val PDF_TYPES = arrayOf("application/pdf")
-private val DOCX_TYPES = arrayOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+private val DOCX_TYPES = arrayOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword")
 private val TXT_TYPES = arrayOf("text/plain")
 private val EXCEL_TYPES = arrayOf(
     "text/csv",
@@ -107,7 +110,7 @@ private val EXCEL_TYPES = arrayOf(
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "application/vnd.ms-excel.sheet.binary.macroenabled.12"
 )
-private val PRESENTATION_TYPES = arrayOf("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+private val PRESENTATION_TYPES = arrayOf("application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint")
 private val WEB_TYPES = arrayOf("text/html", "text/markdown", "application/rtf", "text/rtf", "application/json")
 
 val LocalStrings = staticCompositionLocalOf { StrTr }
@@ -455,13 +458,13 @@ private fun HomeScreen(
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Tile("PDF", "PDF", st.tileSubPick, onPickPdf, Modifier.weight(1f))
-                Tile("DOCX", "DOCX", st.tileSubPick, onPickDocx, Modifier.weight(1f))
+                Tile("DOCX", "DOCX / DOC", st.tileSubPick, onPickDocx, Modifier.weight(1f))
                 Tile("TXT", "TXT", st.tileSubPick, onPickTxt, Modifier.weight(1f))
                 Tile("EXCEL", "XLSX / XLS / CSV", st.tileSubPick, onPickExcel, Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Tile("PPTX", "PPTX", st.tileSubPick, onPickPresentation, Modifier.weight(1f))
+                Tile("PPTX", "PPTX / PPT", st.tileSubPick, onPickPresentation, Modifier.weight(1f))
                 Tile("WEB", "HTML / RTF / MD", st.tileSubPick, onPickWeb, Modifier.weight(1f))
                 Tile("METIN", st.tileText, st.tileSubPaste, onPaste, Modifier.weight(1f))
             }
@@ -665,7 +668,26 @@ private fun RewardScreen(summaryReady: Boolean, onUnlock: () -> Unit, onBack: ()
     val ctx = LocalContext.current
     val ready by AdsGate.ready.collectAsStateWithLifecycle()
     val status by RewardedGate.status.collectAsStateWithLifecycle()
-    LaunchedEffect(ready) { RewardedGate.load(ctx) }
+    var gaveUp by remember { mutableStateOf(false) }
+    var attempt by remember { mutableStateOf(0) }
+    // Reklam kapısı hazır değilse (internet yok / rıza formu tamamlanmadı) birkaç kez yeniden denenir; sonunda "tekrar dene" düğmesi çıkar.
+    LaunchedEffect(ready, attempt) {
+        if (ready) {
+            gaveUp = false
+            RewardedGate.load(ctx)
+        } else {
+            var n = 0
+            while (n < 6 && !AdsGate.ready.value) {
+                (ctx as? Activity)?.let { AdsGate.start(it) }
+                delay(5_000L)
+                n++
+            }
+            if (!AdsGate.ready.value) gaveUp = true
+        }
+    }
+    // Reklam izlenmeden kapatıldıysa (durum 0'a döner) yenisini yükle; ekran sonsuz "yükleniyor"da kalmasın.
+    LaunchedEffect(status, ready) { if (ready && status == 0) RewardedGate.load(ctx) }
+    val failed = status == 3 || gaveUp
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -674,16 +696,21 @@ private fun RewardScreen(summaryReady: Boolean, onUnlock: () -> Unit, onBack: ()
         Text(if (summaryReady) st.rewardTitle else st.summarizing, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Pal.Ink)
         Spacer(Modifier.height(8.dp))
         Text(
-            if (status == 3) st.rewardFailed else if (summaryReady) st.rewardDesc else st.rewardDescWorking,
+            if (failed) st.rewardFailed else if (summaryReady) st.rewardDesc else st.rewardDescWorking,
             textAlign = TextAlign.Center,
             color = Pal.Sub
         )
         Spacer(Modifier.height(24.dp))
-        when (status) {
-            2 -> PrimaryButton(st.rewardWatch, {
+        when {
+            status == 2 -> PrimaryButton(st.rewardWatch, {
                 (ctx as? Activity)?.let { act -> RewardedGate.show(act, onUnlock) }
             }, Modifier.fillMaxWidth())
-            3 -> PrimaryButton(st.rewardRetry, { RewardedGate.load(ctx) }, Modifier.fillMaxWidth())
+            failed -> PrimaryButton(st.rewardRetry, {
+                if (ready) RewardedGate.load(ctx) else {
+                    gaveUp = false
+                    attempt += 1
+                }
+            }, Modifier.fillMaxWidth())
             else -> {
                 CircularProgressIndicator(color = Pal.Red)
                 Spacer(Modifier.height(12.dp))
