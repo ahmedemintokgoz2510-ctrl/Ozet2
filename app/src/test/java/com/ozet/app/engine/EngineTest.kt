@@ -138,7 +138,7 @@ class EngineTest {
         data.forEachIndexed { i, d -> rows.add(listOf(t(d.first), n(d.second), n(d.third))) }
         rows.add(listOf(t("GENEL TOPLAM"), n(600.0, "SUM(B2:B4)"), n(60.0, "SUM(C2:C4)")))
         val text = SheetRenderer.render(listOf(SGrid("Veri", false, rows)))
-        assertTrue("toplam 600 (1200 değil)", text.contains("Satış sütunu: toplam 600"))
+        assertTrue("toplam 600 (1200 değil)", text.contains("GENEL TOPLAM: Satış 600"))
         assertFalse(text.contains("1.200"))
         assertTrue("toplam satırı ayrı cümle", text.contains("GENEL TOPLAM: Satış 600; Adet 60."))
         assertTrue("en yüksek satır etiketiyle", text.contains("en yüksek 300 (İzmir)"))
@@ -151,7 +151,7 @@ class EngineTest {
             listOf(t("Toplamlar"), n(30.0, "SUM(B2:B3)"))
         )
         val text = SheetRenderer.render(listOf(SGrid("S", false, rows)))
-        assertTrue(text.contains("toplam 30"))
+        assertTrue(text.contains("Tutar 30"))
     }
 
     @Test fun sheet_percentAndHiddenSheets() {
