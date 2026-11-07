@@ -11,11 +11,11 @@ Gradle 8.7, Android Gradle Plugin 8.5.2, Kotlin 1.9.24, Compose BOM 2024.06.00, 
 minSdk 26, targetSdk 34.
 
 ## Reklamlar
-Reklamlar Google AdMob ile çalışır ve şu an Google'ın TEST kimliklerini kullanır (app/src/main/res/values/strings.xml):
-admob_app_id, admob_banner_id (alt banner), admob_working_id (10 sn'lik bekleme ekranı reklamı, 300x250).
-Kullanıcı rızası (UMP) uygulama açılışında istenir; rıza yoksa reklam yüklenmez.
-Gerçek kimlikler için: AdMob'da uygulamayı ekle, iki banner reklam birimi oluştur, kimlikleri strings.xml'e yaz,
-UMP mesajını AdMob > Gizlilik ve mesajlaşma bölümünden yayınla. Kendi gerçek reklamlarına test cihazında tıklama.
+Reklamlar Google AdMob ile çalışır. Kimlikler app/src/main/res/values/strings.xml içindedir:
+admob_app_id, admob_banner_id (üst ve alt banner, 320x50), admob_working_id (10 sn'lik bekleme ekranı, 300x250), admob_rewarded_id (ödüllü).
+Yayın (release) derlemesi gerçek kimlikleri kullanır; debug derlemesi app/src/debug/res/values/strings.xml içindeki Google TEST kimliklerini kullanır.
+Release derlemesinde dört kimliğin hepsi gerçektir (uygulama, banner, bekleme ekranı, ödüllü).
+Kullanıcı rızası (UMP) uygulama açılışında istenir; rıza yoksa reklam yüklenmez. UMP mesajını AdMob > Gizlilik ve mesajlaşma bölümünden yayınla.
 
 ## Diller
 Türkçe, İngilizce, Almanca, İspanyolca, Arapça (RTL), Fransızca. Metinler app/src/main/java/com/ozet/app/i18n/Str*.kt dosyalarındadır.

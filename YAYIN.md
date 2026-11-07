@@ -21,7 +21,7 @@ Actions → "Build APK" → Run workflow. `bundle` işi bitince **ozet-release-a
 Secrets yoksa AAB imzasız üretilir ve Play'e yüklenemez.
 
 ## 4. Yayından önce
-- `app/src/main/res/values/strings.xml` içindeki 4 AdMob kimliğini (`admob_*`) gerçek kimliklerle değiştir (şu an Google test kimlikleri).
+- `app/src/main/res/values/strings.xml` içindeki dört AdMob kimliği artık gerçek (release derlemesi). Debug derlemesi her zaman test kimliği kullanır.
 - Her yeni sürümde `app/build.gradle.kts` içinde `versionCode`'u artır.
 - Play Console: gizlilik politikası URL'si, "Veri güvenliği" formu (AdMob reklam kimliği kullanılıyor), içerik derecelendirmesi ve reklam içerdiğini belirten beyan gerekir.
 - Hedef API 36'dır (Google Play'in 31 Ağustos 2026 şartı).
